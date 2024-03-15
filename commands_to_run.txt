@@ -1,0 +1,11 @@
+make [compile kernel prog and then compile the user space prog]
+
+sudo tc qdisc add dev wlp170s0 clsact [Make qdisc queue]
+sudo tc filter add dev wlp170s0 ingress bpf da obj perfBuffer_kern.o sec tc_lb_ingress [Attach the program obj file to interface]
+
+sudo bpftool map list
+sudo bpftool map dump id <map_id>
+
+sudo bpftool map event_pipe <MAP> [cpu <N> index <M>] 
+
+sudo bpftool prog list
