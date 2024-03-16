@@ -19,10 +19,53 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <hs/hs.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define a pattern to search for - in this case, "1.1"
+#define PATTERN "1\\.1"
+#define PATTERN_FLAG HS_FLAG_DOTALL // Modify as needed for your pattern's requirements
+#define PATTERN_ID 0                // An arbitrary identifier for your pattern
+
 #define MAX_CPUS 128
 #define PERF_MAP "/sys/fs/bpf/tc/globals/adjust_cpu"
 static struct perf_buffer *pb = NULL;
 FILE *fd_output;
+
+hs_database_t *database = NULL;
+hs_scratch_t *scratch = NULL;
+
+int count = 0;
+
+static int eventHandler(unsigned int id, unsigned long long from,
+                        unsigned long long to, unsigned int flags, void *ctx) // callback for hs
+{
+    printf("Match for pattern ID %u at offset %llu\n", id, to);
+
+    return 0; // Continue matching
+}
+
+int initialize_hyperscan() // Still needs to allocate scratchspace
+{
+    hs_compile_error_t *compile_err;
+    if (hs_compile(PATTERN, PATTERN_FLAG, HS_MODE_BLOCK, NULL, &database, &compile_err) != HS_SUCCESS)
+    {
+        fprintf(stderr, "ERROR: Unable to compile pattern \"%s\": %s\n",
+                PATTERN, compile_err->message);
+        hs_free_compile_error(compile_err);
+        return -1;
+    }
+
+    if (hs_alloc_scratch(database, &scratch) != HS_SUCCESS)
+    {
+        fprintf(stderr, "ERROR: Unable to allocate scratch space.\n");
+        hs_free_database(database);
+        return -1;
+    }
+
+    return 0; // Initialization successful
+}
 
 static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
 {
@@ -40,10 +83,28 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     fprintf(fd_output, "%s:%u\t", inet_ntoa(src), ntohs(e->sport));
     fprintf(fd_output, "%s:%u\n", inet_ntoa(dst), ntohs(e->dport));
     fflush(fd_output);
+
+    // if(hs_scan(database))
+    if (hs_scan(database, e->sport, 2 /*len(e->sport)*/, 0, scratch, eventHandler,
+                PATTERN) != HS_SUCCESS) // Change the lenght which is strlen(e->sport) right now to a fixed size for port number
+    {
+        fprintf(stderr, "ERROR: Unable to scan input buffer. Exiting.\n");
+        hs_free_scratch(scratch);
+        // free(inputData);
+        hs_free_database(database);
+        // return -1;
+    }
 }
 
 int main(int argc, char **argv)
 {
+
+    if (initialize_hyperscan() != 0)
+    {
+        fprintf(stderr, "Failed to initialize Hyperscan.\n");
+        return -1;
+    }
+
     struct rlimit r = {RLIM_INFINITY, RLIM_INFINITY};
     int map_fd;
     int ret, err;
