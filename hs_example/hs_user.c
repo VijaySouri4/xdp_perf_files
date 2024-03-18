@@ -24,7 +24,7 @@
 #include <stdlib.h>
 
 // Define a pattern to search for - in this case, "1.1"
-#define PATTERN "1\\.1"
+#define PATTERN "44"                //"1\\.1"             // 44794
 #define PATTERN_FLAG HS_FLAG_DOTALL // Modify as needed for your pattern's requirements
 #define PATTERN_ID 0                // An arbitrary identifier for your pattern
 
@@ -84,11 +84,16 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     fprintf(fd_output, "%s:%u\n", inet_ntoa(dst), ntohs(e->dport));
     fflush(fd_output);
 
+    char port_str[6];
+    snprintf(port_str, sizeof(port_str), "%u", ntohs(e->dport)); // checking with dport instead
+
     // if(hs_scan(database))
-    if (hs_scan(database, e->sport, 2 /*len(e->sport)*/, 0, scratch, eventHandler,
+    printf("destination port number: %s \n", port_str);
+    if (hs_scan(database, port_str, strlen(port_str), 0, scratch, eventHandler,
                 PATTERN) != HS_SUCCESS) // Change the lenght which is strlen(e->sport) right now to a fixed size for port number
     {
-        fprintf(stderr, "ERROR: Unable to scan input buffer. Exiting.\n");
+        // fprintf(stderr, "ERROR: Unable to scan input buffer. Exiting.\n");
+        printf("ERROR: Unable to scan input buffer. Exiting");
         hs_free_scratch(scratch);
         // free(inputData);
         hs_free_database(database);
@@ -112,7 +117,7 @@ int main(int argc, char **argv)
     map_fd = bpf_obj_get(PERF_MAP);
     if (map_fd < 0)
     {
-        perror("couldnt get pinned timeseries map\n");
+        perror("couldnt get pinned perf map\n");
         return 1;
     }
 
@@ -133,7 +138,7 @@ int main(int argc, char **argv)
     }
     while ((ret = perf_buffer__poll(pb, 1000)) >= 0)
     {
-        printf("polling all the way!");
+        printf("1111");
     }
     fclose(fd_output);
     kill(0, SIGINT);

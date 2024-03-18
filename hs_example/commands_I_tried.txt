@@ -1,0 +1,15 @@
+gcc -o hs_user hs_user.c \ -D__TARGET_ARCH_$(shell uname -m | sed 's/x86_64/x86/' | sed 's/aarch64/arm64/' | sed 's/ppc64le/powerpc/' | sed 's/mips.*/mips/') -I/root/libbpf/include/uapi -I/user/local/bpf/include -I/usr/local/include/hs -I/usr/local/include -L/usr/local/bpf/lib64 -L/usr/local/lib -lbpf -lelf -lz -lhs -lstdc++ -lm
+
+This did not work saying shell was not recognized and also an error that /root/../uapi permission was denied
+
+gcc -o hs_user hs_user.c \ -I/root/libbpf/include/uapi -I/user/local/bpf/include -I/usr/local/include/hs -I/usr/local/include -L/usr/local/bpf/lib64 -L/usr/local/lib -lbpf -lelf -lz -lhs -lstdc++ -lm
+
+This above command [previous one without the arch thingy] somehow does not throw the /root/../uapi error but gives an error with too many arguments with perf_buffer_new function that I saw first time when I tried compiling Bhavana's code
+
+gcc -o hs_user hs_user.c \ -I/root/libbpf/include/uapi -I/user/local/bpf/include -I/usr/local/include/hs -I/usr/local/include -L/usr/local/bpf/lib64 -L/usr/local/lib -lbpf -lelf -lz -lhs -lstdc++ -lm
+
+
+gcc -D__TARGET_ARCH_$($(shell uname -m | sed 's/x86_64/x86/' | sed 's/aarch64/arm64/' | sed 's/ppc64le/powerpc/' | sed 's/mips.*/mips/')) -I /root/libbpf/include/uapi -I /usr/local/bpf/include -I /usr/local/include/hs
+
+sudo tc qdisc add dev wlp170s0 clsact
+sudo tc filter add dev wlp170s0 ingress bpf da obj hs_kern.o sec tc_lb_ingress

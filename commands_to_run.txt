@@ -9,3 +9,15 @@ sudo bpftool map dump id <map_id>
 sudo bpftool map event_pipe <MAP> [cpu <N> index <M>] 
 
 sudo bpftool prog list
+
+
+gcc -I/usr/local/include/hs hs_user.c /usr/local/lib/libhs.a -lstdc++ -lm
+
+
+gcc -o hs_user hs_user.c \
+> -I/root/libbpf/include/uapi -I/user/local/bpf/include -I/usr/local/include/hs -I/usr/local/include \
+> -L/usr/local/bpf/lib64 -L/usr/local/lib \
+> -lbpf -lelf -lz -lhs -lstdc++ -lm
+
+The above command is not working. As user exits saying cannot access /root/../uapi
+and as su it exits by not finding ../uapi 
