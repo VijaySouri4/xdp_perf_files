@@ -29,7 +29,7 @@
 #define PATTERN_ID 0                // An arbitrary identifier for your pattern
 
 #define MAX_CPUS 128
-#define PERF_MAP "/sys/fs/bpf/tc/globals/adjust_cpu"
+#define PERF_MAP "/sys/fs/bpf/tc/globals/hs_xdp_map" // adjust_cpu used before
 static struct perf_buffer *pb = NULL;
 FILE *fd_output;
 
