@@ -1,8 +1,6 @@
 gitignore
-hs_example/hs_user
-hs_xdp_example/hs_user
 *.o
 hs_user
-*/
+hs_multi_pat_user
 git-filter-repo
 to_do.md
