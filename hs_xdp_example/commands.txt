@@ -13,8 +13,11 @@ sudo bpftool prog list
 compile kern --> 
 
 clang-14 -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /root/libbpf/include/uapi -I /usr/local/bpf/include -I/usr/local/include/hs -idirafter /usr/lib/llvm-14/lib/clang/14.0.0/include -idirafter /usr/local/include -idirafter /usr/include/x86_64-linux-gnu -idirafter /usr/include -c hs_kern.c
+clang-14 -g -O2 -target bpf -D__TARGET_ARCH_x86 -I /root/libbpf/include/uapi -I /usr/local/bpf/include -I/usr/local/include/hs -idirafter /usr/lib/llvm-14/lib/clang/14.0.0/include -idirafter /usr/local/include -idirafter /usr/include/x86_64-linux-gnu -idirafter /usr/include -c hs_kern_payload.c
 
 compile user -->
 
 gcc -g -O2 -D__TARGET_ARCH_x86 -I /usr/local/bpf/include -I/usr/local/include/hs -idirafter /usr/lib/llvm-14/lib/clang/14.0.0/include -idirafter /usr/local/include -idirafter /usr/include/x86_64-linux-gnu -idirafter /usr/include -o hs_user hs_user.c -L /usr/local/bpf/lib64 -lbpf -lelf -lz -L/usr/local/lib -lhs -lm -lstdc++
 
+gcc -g -O2 -D__TARGET_ARCH_x86 -I /usr/local/bpf/include -I/usr/local/include/hs -idirafter /usr/lib/llvm-14/lib/clang/14.0.0/include -idirafter /usr/local/include -idirafter /usr/include/x86_64-linux-gnu -idirafter /usr/include -o hs_multi_pat_user hs_multi_pat_user.c -L /usr/local/bpf/lib64 -lbpf -lelf -l
+z -L/usr/local/lib -lhs -lm -lstdc++
