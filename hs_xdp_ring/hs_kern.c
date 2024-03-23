@@ -39,11 +39,11 @@ struct bpf_elf_map
     __u32 pinning;
 };
 
-struct bpf_elf_map SEC("maps") hs_xdp_payload_map = {
-    .type = BPF_MAP_TYPE_PERF_EVENT_ARRAY,
+struct bpf_elf_map SEC("maps") hs_xdp_payload_map_ring = {
+    .type = BPF_MAP_TYPE_RINGBUF,
     .size_key = sizeof(int),
     .size_value = sizeof(__u32),
-    .max_elem = 20, // make it large or max
+    .max_elem = 256 * 1024, // make it large or max
     .pinning = PIN_GLOBAL_NS,
 };
 
@@ -57,6 +57,7 @@ struct bpf_elf_map SEC("maps") hs_xdp_payload_map = {
  * LIBBPF_PIN_BY_NAME
  * PIN_GLOBAL_NS
  * */
+
 
 SEC("xdp")
 int hs_xdp_prog(struct xdp_md *ctx)
@@ -105,11 +106,17 @@ int hs_xdp_prog(struct xdp_md *ctx)
     con_map.sport = tcph->dest;
     con_map.dport = tcph->source;
 
-    ret = bpf_perf_event_output(ctx, &hs_xdp_payload_map, flags, &con_map, sizeof(con_map));
-    if (ret < 0)
-        return XDP_DROP
+    // ret = bpf_perf_event_output(ctx, &hs_xdp_payload_map, flags, &con_map, sizeof(con_map));
+
+    void *data_res = bpf_ringbuf_reserve(&hs_xdp_payload_map_ring, sizeof(con_map), 0);
+    if (!data_res)
+        return XDP_PASS;
+
+    ret = bpf_ringbuf_output(&hs_xdp_payload_map_ring, &con_map, sizeof(con_map), 0);
+    if (ret<0)
+        return XDP_DROP;
     else
-        return XDP
+        return XDP_TX;
     // check ret values
     // ideally if the perf output was not read
     // return the XDP_RT if the ret value idicates that hs was able to read

@@ -1,0 +1,17 @@
+Traffic:
+
+burstreplay
+
+in hs callback use bpf counters to calculate how many founds. 
+
+Then return the traffic so that the traffic checker can check the throughput
+
+XDP tx
+
+Comparision:
+
+use Ring buffer also. 
+
+Use DPDK
+
+1. Email prof sudarshan about thesis
