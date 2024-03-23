@@ -43,7 +43,7 @@ struct bpf_elf_map SEC("maps") hs_xdp_payload_map = {
     .type = BPF_MAP_TYPE_PERF_EVENT_ARRAY,
     .size_key = sizeof(int),
     .size_value = sizeof(__u32),
-    .max_elem = 20, // make it large or max
+    .max_elem = 20,
     .pinning = PIN_GLOBAL_NS,
 };
 
@@ -57,6 +57,61 @@ struct bpf_elf_map SEC("maps") hs_xdp_payload_map = {
  * LIBBPF_PIN_BY_NAME
  * PIN_GLOBAL_NS
  * */
+
+// SEC("xdp")
+// int hs_xdp_prog(struct xdp_md *ctx)
+// {
+//     void *data = (void *)(long)ctx->data;
+//     void *data_end = (void *)(long)ctx->data_end;
+//     struct ethhdr *eth = data;
+//     struct iphdr *iph;
+//     struct tcphdr *tcph;
+
+//     __u64 ktime;
+//     __u64 flags = BPF_F_CURRENT_CPU;
+
+//     int ret;
+//     struct connection_map con_map;
+
+//     // if (eth + 1 > data_end)
+//     //     return XDP_PASS;
+
+//     if (!eth || (void *)eth + ETH_HLEN > data_end)
+//         return XDP_PASS;
+
+//     // IP header validation
+//     iph = data + sizeof(*eth);
+//     // if (iph + 1 > data_end)
+//     //     return XDP_PASS;
+//     if (!iph || (void *)iph + sizeof(*iph) > data_end)
+//         return XDP_PASS;
+//     if (iph->protocol != IPPROTO_TCP)
+//         return XDP_PASS;
+
+//     // TCP header validation
+//     tcph = (void *)iph + sizeof(*iph);
+//     // if (tcph + 1 > data_end)
+//     //     return XDP_PASS;
+//     if (!tcph || (void *)tcph + sizeof(*tcph) > data_end)
+//         return XDP_PASS;
+
+//     __u32 payload_size = data_end - (void *)tcph - sizeof(*tcph);
+//     if (payload_size > MAX_PAYLOAD_SIZE)
+//     {
+//         payload_size = MAX_PAYLOAD_SIZE;
+//     }
+
+//     void *payload_ptr = (void *)tcph + sizeof(*tcph);
+//     bpf_probe_read(&con_map.payload, payload_size, payload_ptr);
+
+//     con_map.saddr = iph->daddr;
+//     con_map.daddr = iph->saddr;
+//     con_map.sport = tcph->dest;
+//     con_map.dport = tcph->source;
+
+//     ret = bpf_perf_event_output(ctx, &hs_xdp_payload_map, flags, &con_map, sizeof(con_map));
+//     return XDP_PASS;
+// }
 
 SEC("xdp")
 int hs_xdp_prog(struct xdp_md *ctx)
@@ -96,9 +151,21 @@ int hs_xdp_prog(struct xdp_md *ctx)
 
     __u32 pl_size = 20;
 
-    ret = bpf_xdp_load_bytes(ctx, offset, con_map.payload, pl_size);
+    // ret = bpf_xdp_load_bytes(ctx, offset, con_map.payload, pl_size);
+    // if (ret < 0)
+    //     return XDP_PASS;
+
+    __u32 payload_offset = offset;
+    __u32 payload_size_probe = data_end - data - payload_offset;
+    if (payload_size_probe > MAX_PAYLOAD_SIZE) {
+        payload_size_probe = MAX_PAYLOAD_SIZE;
+    }
+
+    ret = bpf_probe_read_kernel(con_map.payload, payload_size_probe, data + payload_offset);
     if (ret < 0)
-        return XDP_PASS;
+        return XDP_DROP;
+
+
 
     con_map.saddr = iph->daddr;
     con_map.daddr = iph->saddr;
@@ -106,15 +173,6 @@ int hs_xdp_prog(struct xdp_md *ctx)
     con_map.dport = tcph->source;
 
     ret = bpf_perf_event_output(ctx, &hs_xdp_payload_map, flags, &con_map, sizeof(con_map));
-    if (ret < 0)
-        return XDP_DROP;
-    else
-        return XDP_PASS;
-    // check ret values
-    // ideally if the perf output was not read
-    // return the XDP_RT if the ret value idicates that hs was able to read
-    // return XDP_DROP if the ret is neg
-    
     return XDP_PASS;
 }
 char _license[] SEC("license") = "Dual BSD/GPL"; //"GPL";
