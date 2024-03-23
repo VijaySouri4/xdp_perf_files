@@ -41,8 +41,6 @@ struct bpf_elf_map
 
 struct bpf_elf_map SEC("maps") hs_xdp_payload_map_ring = {
     .type = BPF_MAP_TYPE_RINGBUF,
-    .size_key = sizeof(int),
-    .size_value = sizeof(__u32),
     .max_elem = 256 * 1024, // make it large or max
     .pinning = PIN_GLOBAL_NS,
 };
@@ -57,7 +55,6 @@ struct bpf_elf_map SEC("maps") hs_xdp_payload_map_ring = {
  * LIBBPF_PIN_BY_NAME
  * PIN_GLOBAL_NS
  * */
-
 
 SEC("xdp")
 int hs_xdp_prog(struct xdp_md *ctx)
@@ -108,12 +105,12 @@ int hs_xdp_prog(struct xdp_md *ctx)
 
     // ret = bpf_perf_event_output(ctx, &hs_xdp_payload_map, flags, &con_map, sizeof(con_map));
 
-    void *data_res = bpf_ringbuf_reserve(&hs_xdp_payload_map_ring, sizeof(con_map), 0);
-    if (!data_res)
-        return XDP_PASS;
+    // void *data_res = bpf_ringbuf_reserve(&hs_xdp_payload_map_ring, sizeof(con_map), 0);
+    // if (!data_res)
+    //     return XDP_PASS;
 
     ret = bpf_ringbuf_output(&hs_xdp_payload_map_ring, &con_map, sizeof(con_map), 0);
-    if (ret<0)
+    if (ret < 0)
         return XDP_DROP;
     else
         return XDP_TX;
@@ -121,7 +118,7 @@ int hs_xdp_prog(struct xdp_md *ctx)
     // ideally if the perf output was not read
     // return the XDP_RT if the ret value idicates that hs was able to read
     // return XDP_DROP if the ret is neg
-    
+
     return XDP_PASS;
 }
 char _license[] SEC("license") = "Dual BSD/GPL"; //"GPL";
