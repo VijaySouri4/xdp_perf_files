@@ -20,7 +20,7 @@
 #include <hs/hs.h>
 #include <ctype.h>
 
-#define MAX_PAYLOAD_SIZE 50
+#define MAX_PAYLOAD_SIZE 20
 #define MAX_CPUS 128
 #define MAX_PATTERNS 10000          // Adjust based on the expected number of patterns
 #define PATTERN_FLAG HS_FLAG_DOTALL // Modify as needed
@@ -28,14 +28,16 @@
 
 static struct perf_buffer *pb = NULL;
 FILE *fd_output;
+FILE *hs_output;
 
 hs_database_t *database = NULL;
 hs_scratch_t *scratch = NULL;
+int count = 0;
 
 static int eventHandler(unsigned int id, unsigned long long from,
                         unsigned long long to, unsigned int flags, void *ctx)
 {
-    printf("Match for pattern ID %u at offset %llu\n", id, to);
+    fprintf(hs_output, "Match for pattern ID %u at offset %llu\n", id, to);
     return 0; // Continue matching
 }
 
@@ -126,28 +128,62 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     dst.s_addr = e->daddr;
     fprintf(fd_output, "%s:%u\t", inet_ntoa(src), ntohs(e->sport));
     fprintf(fd_output, "%s:%u\n", inet_ntoa(dst), ntohs(e->dport));
+    fprintf(fd_output, "Payload: ");
+    for (int i = 0; i < MAX_PAYLOAD_SIZE; i++)
+    {
+        // printf("before break \n");
+        //  Check for the end of the payload
+        if (e->payload[i] == '\0')
+            break;
+        // printf("after break \n");
+        //  Print payload characters if printable, otherwise print a dot
+        if (isprint(e->payload[i]))
+            fprintf(fd_output, "%c", e->payload[i]);
+        else
+            fprintf(fd_output, ".");
+    }
+    fprintf(fd_output, "\n");
     fflush(fd_output);
 
-    char port_str[11];
-    snprintf(port_str, sizeof(port_str), "%u", ntohs(src.s_addr)); // checking with dport instead
+    // char port_str[11];
+    // snprintf(port_str, sizeof(port_str), "%u", ntohs(src.s_addr)); // checking with dport instead
 
-    printf("Connection Info:\n");
-    printf("  Source Address: %s\n", inet_ntoa(src));
-    printf("  Source Port: %u\n", ntohs(e->sport));
-    printf("  Destination Address: %s\n", inet_ntoa(dst));
-    printf("  Destination Port: %u\n", ntohs(e->dport));
-    printf("Checking against: %s\n", port_str);
+    // printf("Connection Info:\n");
+    // printf("  Source Address: %s\n", inet_ntoa(src));
+    // printf("  Source Port: %u\n", ntohs(e->sport));
+    // printf("  Destination Address: %s\n", inet_ntoa(dst));
+    // printf("  Destination Port: %u\n", ntohs(e->dport));
+    // printf("Checking against: %s\n", port_str);
 
-    char payload[MAX_PAYLOAD_SIZE + 1];
-    memcpy(payload, e->payload, MAX_PAYLOAD_SIZE);
-    payload[MAX_PAYLOAD_SIZE] = '\0';
-    printf("  Payload: %s\n", payload);
+    // char payload[MAX_PAYLOAD_SIZE + 1];
+    // memcpy(payload, e->payload, MAX_PAYLOAD_SIZE);
+    // payload[MAX_PAYLOAD_SIZE] = '\0';
+    // printf("  Payload: %s\n", payload);
 
-    if (hs_scan(database, port_str, strlen(port_str), 0, scratch, eventHandler, NULL) != HS_SUCCESS)
+    // if (hs_scan(database, port_str, strlen(port_str), 0, scratch, eventHandler, NULL) != HS_SUCCESS)
+    // {
+    //     printf("ERROR: Unable to scan input buffer. Exiting.\n");
+    //     hs_free_scratch(scratch);
+    //     hs_free_database(database);
+    // }
+
+    if (isprint(e->payload[0]))
     {
-        printf("ERROR: Unable to scan input buffer. Exiting.\n");
-        hs_free_scratch(scratch);
-        hs_free_database(database);
+        if (hs_scan(database, (const char *)e->payload, MAX_PAYLOAD_SIZE, 0, scratch, eventHandler, NULL) != HS_SUCCESS)
+        {
+            printf("ERROR: Unable to scan input buffer. Exiting.\n");
+            hs_free_scratch(scratch);
+            hs_free_database(database);
+        }
+    }
+
+    count++;
+
+    printf("received %d packets", count);
+
+    if (count % 100 == 0)
+    {
+        printf("received %d packets", count);
     }
 }
 
@@ -177,6 +213,9 @@ int main(int argc, char **argv)
         return 1;
     }
     if ((fd_output = fopen("/root/testFile", "w")) == NULL)
+        return 1;
+
+    if ((hs_output = fopen("/root/hsoutFILE", "w")) == NULL)
         return 1;
 
     pb = perf_buffer__new(map_fd, 8, print_bpf_output, NULL, NULL, NULL);

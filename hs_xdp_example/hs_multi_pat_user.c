@@ -231,7 +231,7 @@ int main(int argc, char **argv)
     }
     while ((ret = perf_buffer__poll(pb, 1000)) >= 0)
     {
-        printf("1111");
+        // printf("1111");
     }
     fclose(fd_output);
     kill(0, SIGINT);
