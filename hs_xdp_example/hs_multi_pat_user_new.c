@@ -18,6 +18,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <hs/hs.h>
+#include <ctype.h>
 
 #define MAX_PAYLOAD_SIZE 50
 #define MAX_CPUS 128
@@ -59,7 +60,7 @@ int initialize_hyperscan()
         line[strcspn(line, "\n")] = 0; // Remove newline character
 
         // Skip patterns that could potentially match an empty buffer
-        if (strlen(line) == 0 || strchr(line, '*') || strchr(line, '?') || strcmp(line, "||") == 0)
+        if (strlen(line) == 0 || isspace(line[0]) || strchr(line, '*') || strchr(line, '?') || strcmp(line, "||") == 0)
         {
             continue;
         }

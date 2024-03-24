@@ -26,7 +26,7 @@
 
 // Define a pattern to search for - in this case, "1.1"
 #define PATTERN_1 "44"
-#define PATTERN_2 "43"
+#define PATTERN_2 "ll"
 #define PATTERN_3 "4+"              // to understand use 44 since desination port is 443             //"1\\.1"             // 44794
 #define PATTERN_FLAG HS_FLAG_DOTALL // Modify as needed for your pattern's requirements
 #define PATTERN_ID 0                // An arbitrary identifier for your pattern
@@ -120,12 +120,12 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     fprintf(fd_output, "Payload: ");
     for (int i = 0; i < MAX_PAYLOAD_SIZE; i++)
     {
-        printf("before break \n");
-        // Check for the end of the payload
+        // printf("before break \n");
+        //  Check for the end of the payload
         if (e->payload[i] == '\0')
             break;
-        printf("after break \n");
-        // Print payload characters if printable, otherwise print a dot
+        // printf("after break \n");
+        //  Print payload characters if printable, otherwise print a dot
         if (isprint(e->payload[i]))
             fprintf(fd_output, "%c", e->payload[i]);
         else
@@ -170,12 +170,21 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     // }
     // printf("\n");
 
-    if (hs_scan(database, port_str, strlen(port_str), 0, scratch, eventHandler, NULL) != HS_SUCCESS)
+    if (isprint(e->payload[0]))
     {
-        printf("ERROR: Unable to scan input buffer. Exiting.\n");
-        hs_free_scratch(scratch);
-        hs_free_database(database);
+        if (hs_scan(database, (const char *)e->payload, MAX_PAYLOAD_SIZE, 0, scratch, eventHandler, NULL) != HS_SUCCESS)
+        {
+            printf("ERROR: Unable to scan input buffer. Exiting.\n");
+            hs_free_scratch(scratch);
+            hs_free_database(database);
+        }
     }
+    // if (hs_scan(database, port_str, strlen(port_str), 0, scratch, eventHandler, NULL) != HS_SUCCESS)
+    // {
+    //     printf("ERROR: Unable to scan input buffer. Exiting.\n");
+    //     hs_free_scratch(scratch);
+    //     hs_free_database(database);
+    // }
 
     count++;
 

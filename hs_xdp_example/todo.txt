@@ -17,3 +17,5 @@ Use DPDK
 1. Email prof sudarshan about thesis -- Done
 2. Find regex rules set
 3. scapy traffic generator
+
+remove + + from the regex list 

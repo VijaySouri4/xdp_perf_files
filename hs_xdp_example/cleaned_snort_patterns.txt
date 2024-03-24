@@ -251,7 +251,7 @@ Document_Open
 &fw=
 connect|7C|
 /khc?
-echo |22| + + |22|
+echo |22|   |22|
 |3D|
 User-Agent|3A 20|Mozilla/4.0 compatible|3B| Synapse
 request
@@ -308,7 +308,7 @@ User-Agent|3A 20|macrotest|0D 0A|
 IP Address
 /GlobalFunctions.php
 /anony/
-echo |22|+ +|22|
+echo |22| |22|
 /SFNofitication.dll
 |00 00 78 9C|
 |00|U|00|n|00|d|00|e|00|r|00 20 00|C|00|o|00|n|00|s|00|t|00|r|00|u|00|c|00|t|00|i|00|o|00|n|00|<|00|/
@@ -337,7 +337,6 @@ current=|7C|
 /re/
 _reguestguid
 /upload.cgi
-
 |29 0D 0A|Host:
 sys.dbms_repcat_conf.alter_priority_raw
 .jpg
@@ -577,7 +576,7 @@ button=
 |0D 0A|Connection: Close|0D 0A 0D 0A|
 |8C|
 add.php?apikey=
-+CHANNEL|0B|
+CHANNEL|0B|
 |00 00 00 00 00|
 /collect.php
 |00 02|
@@ -715,7 +714,7 @@ HHV3: 61456
 /index.php?email=libpurple_XMPP
 |5C|object|5C|objemb|5C|*|5C|objclass Package
 file|3A|javascript|3A|
-08|02 01 00 04 06|public|A4|+|06|
+08|02 01 00 04 06|public|A4||06|
 md5=
 conteudo=
 pccsmysqladm/incs/dbconnect.inc
@@ -1050,7 +1049,7 @@ UID:
 /htsearch?-c
 hostid=
 did=
-|22|fr|22|+|22|omCh|22|+|22|arCo|22|+|22|de|22|
+|22|fr|22||22|omCh|22||22|arCo|22||22|de|22|
 |0A|Croot|0A|Mprog
 addEventListener|28|
 &v=1.
@@ -1082,7 +1081,6 @@ dbms_repcat.add_grouped_column
 newsletter.php
 /webhp HTTP/1.1|0D 0A|Accept: */*|0D 0A|Connection: Close|0D 0A|User-Agent: Mozilla/4.0
 .nsf/
-
 ALLO
 dbms_repcat.drop_priority_char
 Pragma|3A 20|no-cache|0D 0A|
@@ -1393,7 +1391,7 @@ getRuntime
 &compuser=
 .wmz
 .printer
-+|06 10|@|14 D1 02 19|
+|06 10|@|14 D1 02 19|
 /booth.php
 /download.cgi
 CFUSION_GETODBCDSN|28 29|
@@ -1608,7 +1606,7 @@ Referer|3A|
 /adminlogin
 /admin-serv/config/admpw
 .snp
-+++ath
+ath
 &uplink=
 /ads.cgi
 /servlet/admin
@@ -1661,7 +1659,7 @@ blobheadervalue2=
 /scripts/cpshost.dll
 sys.dbms_repcat_mas.do_deferred_repcat_admin
 loginpost|7C|
-|EB|E|EB| |FC|3|C9 B1 82 8B F3 80|+
+|EB|E|EB| |FC|3|C9 B1 82 8B F3 80|
 IHDR
 sys.dbms_repcat_sna.refresh_snapshot_repschema
 /mkilog.exe
@@ -2189,7 +2187,6 @@ sock
 dados=
 |55 04 07 13 0E|Redwood Shores
 rmgroup
-+
 /search.php
 .www_acl
 |55 04 0A 0C 10|Wiqur Hitin ehf.
@@ -2216,7 +2213,7 @@ dbms_repcat.drop_update_resolution
 name=../
 pass -saint
 db_details_importdocsql.php
-Cpa=+EXEC+
+Cpa=EXEC
 Content-Type: application/json|5C 3B| charset=utf-8
 sys.dbms_repcat_sna_utl.switch_snapshot_master
 dlen=
@@ -2531,7 +2528,7 @@ sys.dbms_repcat_conf.drop_update_resolution
 &offer_id=
 Let's Encrypt
 |24 7B|
-Accept: text/html,application/xhtml+xml,application/xml|3B|q=0.8,*/*|3B|q=0.9|0D 0A|
+Accept: text/html,application/xhtmlxml,application/xml|3B|q=0.8,*/*|3B|q=0.9|0D 0A|
 username too long
 HTTP/1.1|0D 0A|Accept: */*|0D 0A|Content-Type: application/octet-stream|0D 0A|Connection: Close|0D 0A|User-Agent: Mozilla/
 pass -satan
@@ -2772,7 +2769,7 @@ _v=
 |3C 7C 3E|Microsoft Windows
 /cab/sts.exe
 logfile=
-On+Error+Resume+Next:
+OnErrorResumeNext:
 User-Agent: Google Omaha|0D 0A|
 ?STRENGUR
 |FF D8 FF|
@@ -2792,7 +2789,6 @@ quant=
 |22|meta|22|:,|22|status|22|:|22|OK|22|,|22|saved|22|:|22|1|22|,|22|starttime|22|:17656184060,|22|id|22|:|22||22|,|22|vims|22|:|22|dtc|22|:
 /_private/register.txt
 &ct=
-
 /cvsweb/version
 |B4| |B4|!|8B CC 83 E9 04 8B 19|3|C9|f|B9 10|
 Index of /cgi-bin/
@@ -2941,7 +2937,7 @@ ONLY=
 Accept-Language: en-us,en|3B|q=0.5|0D 0A|
 ForumLang=../
 %COMPUTERNAME%
-&del+/s+c|3A 5C|*.*
+&del/sc|3A 5C|*.*
 sys.dbms_repcat_rq.add_column
 Referer
 /get_status.php?name=
@@ -3020,7 +3016,7 @@ parent_request_id=
 /compcheckjava.cgi
 |00 00 00 00 00 00 00 00 00 00 00 00 08 09 0A 0B|
 /awstats.pl?
-|0D 0A|Accept: text/html,application/xhtml+xml,application/xml|3B|q=0.9,*/*|3B|q=0.8|0D 0A|Accept-Encoding: identity|0D 0A|User-Agent: Mozilla/3.0 compatible|3B| Indy Library|0D 0A 0D 0A|
+|0D 0A|Accept: text/html,application/xhtmlxml,application/xml|3B|q=0.9,*/*|3B|q=0.8|0D 0A|Accept-Encoding: identity|0D 0A|User-Agent: Mozilla/3.0 compatible|3B| Indy Library|0D 0A 0D 0A|
 Microsoft Windows
 all_views
 /login.uix
@@ -3133,7 +3129,7 @@ qazwsx.hsq
 /service.pwd
 /advworks/equipment/catalog_type.asp
 /biztalkhttpreceive.dll
-=+
+=
 PASS
 &x=
 /showcode.asp
@@ -3191,7 +3187,7 @@ Content-Disposition: form-data|3B| name=|22|user_id|22|
 =
 /graphics/sml3com
 /cgiWebupdate.exe
-0&|02 01 00 04 06|public|A0 19 02 01 00 02 01 00 02 01 00|0|0E|0|0C 06 08|+|06 01 02 01 01 05 00 05 00|
+0&|02 01 00 04 06|public|A0 19 02 01 00 02 01 00 02 01 00|0|0E|0|0C 06 08||06 01 02 01 01 05 00 05 00|
 /_private/registrations.txt
 /mailfile.cgi
 |08 00 00 00 86 CC 02 89 8F F7 A6 67|
@@ -3391,7 +3387,6 @@ Hz,RAM|3A|
 User-Agent: Mozilla/4.0 compatible|3B| MSIE 8.0|3B| Win32|0D 0A|
 200
 Cache-Control: public,max-age=31536000
-
 ?EditDocument
 User-Agent: macsearch/1 CFNetwork/
 /srchadm
@@ -4001,7 +3996,7 @@ filename=|22|full__setup.zip|22 0D 0A|
 _pdf.exe
 |0B|m|00|a|00|c|00|a|00|v|00|e|00|r|00|d|00|e|00|m|00|2|00 06|m|00|a|00|s|00|t|00|e|00|r|00|
 /HNAP1
-|22|c|22|+|22|r|22 3A|2+|22|e|22|+|22|a|22|+|22|t|22|+|22|e|22|+|22|E|22|+|22|l|22|+|22|e|22|+|22|m|22|+f?|22|e|22|+|22|n|22|+|22|t|22 3A 22 22|
+|22|c|22||22|r|22 3A|2|22|e|22||22|a|22||22|t|22||22|e|22||22|E|22||22|l|22||22|e|22||22|m|22|f?|22|e|22||22|n|22||22|t|22 3A 22 22|
 |17 0D|
 |01 00 00 00 3D|
 =_
@@ -4022,7 +4017,6 @@ OMeterObeseArmad
 a=select CAMPO from PAGINA where CODIGO =
 |20|CPU|3A|
 .cer
-
 /store/agora.cgi?
 |26|hostname=
 %USERDOMAIN%
@@ -4240,7 +4234,7 @@ My Company Name LTD.
 /FtpSaveCSP.dll
 /publickey/ HTTP/1.1|0D 0A|User-Agent: Wget/1.9|0D 0A|Host:
 sicken
-%3D%28%29+%7B
+%3D%28%29%7B
 <iframe
 /Sites/Samples/Knowledge/Membership/Inspiredtutorial/ViewCode.asp
 data=85702b2fccafcb2f
@@ -4531,7 +4525,7 @@ selInfoKey1=
 |0A|Host|3A 20|rl.ammyy.com|0D 0A|
 /cgi-bin/admin/admin
 sys.dbms_repcat_conf.add_delete_resolution
-Accept: application/xml,application/xhtml+xml,text/html|3B|q=0.9,text/plain|3B|q=0.8,image/png,*/*|3B|q=0.5|0D 0A|
+Accept: application/xml,application/xhtmlxml,text/html|3B|q=0.9,text/plain|3B|q=0.8,image/png,*/*|3B|q=0.5|0D 0A|
 NSIS_Inetc Mozilla
 .ashx?t=
 |E2 1D 49 49|
