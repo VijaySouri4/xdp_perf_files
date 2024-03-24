@@ -4,6 +4,7 @@
 #include <string.h>
 #include <linux/perf_event.h>
 #include <linux/bpf.h>
+#include <ctype.h>
 
 #include <net/if.h>
 #include <errno.h>
@@ -106,12 +107,29 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     dst.s_addr = e->daddr;
     fprintf(fd_output, "%s:%u\t", inet_ntoa(src), ntohs(e->sport));
     fprintf(fd_output, "%s:%u\n", inet_ntoa(dst), ntohs(e->dport));
+    // fprintf(fd_output, "Payload: ");
+    // for (int i = 0; i < MAX_PAYLOAD_SIZE; i++)
+    // {
+    //     if (e->payload[i] == '\0')
+    //         break;
+    //     fprintf(fd_output, "%c", e->payload[i]);
+    // }
+    // fprintf(fd_output, "\n");
+    // fflush(fd_output);
+
     fprintf(fd_output, "Payload: ");
     for (int i = 0; i < MAX_PAYLOAD_SIZE; i++)
     {
+        printf("before break \n");
+        // Check for the end of the payload
         if (e->payload[i] == '\0')
             break;
-        fprintf(fd_output, "%c", e->payload[i]);
+        printf("after break \n");
+        // Print payload characters if printable, otherwise print a dot
+        if (isprint(e->payload[i]))
+            fprintf(fd_output, "%c", e->payload[i]);
+        else
+            fprintf(fd_output, ".");
     }
     fprintf(fd_output, "\n");
     fflush(fd_output);
