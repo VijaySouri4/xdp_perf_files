@@ -29,7 +29,7 @@
 #define PATTERN_3 "4+"              // to understand use 44 since desination port is 443             //"1\\.1"             // 44794
 #define PATTERN_FLAG HS_FLAG_DOTALL // Modify as needed for your pattern's requirements
 #define PATTERN_ID 0                // An arbitrary identifier for your pattern
-#define MAX_PAYLOAD_SIZE 50
+#define MAX_PAYLOAD_SIZE 20
 
 #define MAX_CPUS 128
 // #define PERF_MAP "/sys/fs/bpf/tc/globals/hs_xdp_map"
@@ -106,18 +106,26 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     dst.s_addr = e->daddr;
     fprintf(fd_output, "%s:%u\t", inet_ntoa(src), ntohs(e->sport));
     fprintf(fd_output, "%s:%u\n", inet_ntoa(dst), ntohs(e->dport));
+    fprintf(fd_output, "Payload: ");
+    for (int i = 0; i < MAX_PAYLOAD_SIZE; i++)
+    {
+        if (e->payload[i] == '\0')
+            break;
+        fprintf(fd_output, "%c", e->payload[i]);
+    }
+    fprintf(fd_output, "\n");
     fflush(fd_output);
 
     char port_str[11];
     snprintf(port_str, sizeof(port_str), "%u", ntohs(src.s_addr)); // checking with dport instead
 
     // if(hs_scan(database))
-    printf("Connection Info:\n");
-    printf("  Source Address: %s\n", inet_ntoa(src));
-    printf("  Source Port: %u\n", ntohs(e->sport));
-    printf("  Destination Address: %s\n", inet_ntoa(dst));
-    printf("  Destination Port: %u\n", ntohs(e->dport));
-    printf("Checking against: %s\n", port_str);
+    // printf("Connection Info:\n");
+    // printf("  Source Address: %s\n", inet_ntoa(src));
+    // printf("  Source Port: %u\n", ntohs(e->sport));
+    // printf("  Destination Address: %s\n", inet_ntoa(dst));
+    // printf("  Destination Port: %u\n", ntohs(e->dport));
+    // printf("Checking against: %s\n", port_str);
     // if (hs_scan(database, port_str, strlen(port_str), 0, scratch, eventHandler,
     //             PATTERN2) != HS_SUCCESS) // Change the lenght which is strlen(e->sport) right now to a fixed size for port number
     // {
@@ -129,16 +137,33 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     //     // return -1;
     // }
 
-    char payload[MAX_PAYLOAD_SIZE + 1];
-    memcpy(payload, e->payload, MAX_PAYLOAD_SIZE);
-    payload[MAX_PAYLOAD_SIZE] = '\0';
-    printf("  Payload: %s\n", payload);
+    // char payload[MAX_PAYLOAD_SIZE + 1];
+    // memcpy(payload, e->payload, MAX_PAYLOAD_SIZE);
+    // payload[MAX_PAYLOAD_SIZE] = '\0';
+    // printf("  Payload: %s\n", payload);
+
+    // printf("Payload: ");
+    // for (int i = 0; i < MAX_PAYLOAD_SIZE; i++)
+    // {
+    //     printf("inside");
+    //     if (e->payload[i] == '\0')
+    //         break;
+    //     printf("%c", e->payload[i]);
+    // }
+    // printf("\n");
 
     if (hs_scan(database, port_str, strlen(port_str), 0, scratch, eventHandler, NULL) != HS_SUCCESS)
     {
         printf("ERROR: Unable to scan input buffer. Exiting.\n");
         hs_free_scratch(scratch);
         hs_free_database(database);
+    }
+
+    count++;
+
+    if (count % 1000 == 0)
+    {
+        printf("received %d packets", count);
     }
 }
 
@@ -179,7 +204,7 @@ int main(int argc, char **argv)
     }
     while ((ret = perf_buffer__poll(pb, 1000)) >= 0)
     {
-        // printf("1111");
+        printf("1111");
     }
     fclose(fd_output);
     kill(0, SIGINT);

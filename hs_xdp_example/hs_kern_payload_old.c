@@ -17,7 +17,7 @@
 #include <stdbool.h>
 #define NANO_TO_MICRO 1000
 #define PIN_GLOBAL_NS 2
-#define MAX_PAYLOAD_SIZE 50
+#define MAX_PAYLOAD_SIZE 20
 
 struct connection_map
 {
@@ -157,15 +157,23 @@ int hs_xdp_prog(struct xdp_md *ctx)
 
     __u32 payload_offset = offset;
     __u32 payload_size_probe = data_end - data - payload_offset;
-    if (payload_size_probe > MAX_PAYLOAD_SIZE) {
+    if (payload_size_probe > MAX_PAYLOAD_SIZE)
+    {
         payload_size_probe = MAX_PAYLOAD_SIZE;
     }
 
-    ret = bpf_probe_read_kernel(con_map.payload, payload_size_probe, data + payload_offset);
+    if (payload_size_probe <= 0)
+    {
+        payload_size_probe = 1;
+    }
+
+    payload_size_probe = MAX_PAYLOAD_SIZE;
+    if (payload_size_probe != 1)
+        ret = bpf_probe_read_kernel(con_map.payload, (__u32)payload_size_probe, data + payload_offset);
+    else
+        return XDP_PASS;
     if (ret < 0)
-        return XDP_DROP;
-
-
+        return XDP_TX;
 
     con_map.saddr = iph->daddr;
     con_map.daddr = iph->saddr;
@@ -173,7 +181,10 @@ int hs_xdp_prog(struct xdp_md *ctx)
     con_map.dport = tcph->source;
 
     ret = bpf_perf_event_output(ctx, &hs_xdp_payload_map, flags, &con_map, sizeof(con_map));
-    return XDP_PASS;
+    if (ret < 0)
+        return XDP_DROP;
+    else
+        return XDP_TX;
 }
 char _license[] SEC("license") = "Dual BSD/GPL"; //"GPL";
 __u32 _version SEC("version") = LINUX_VERSION_CODE;
