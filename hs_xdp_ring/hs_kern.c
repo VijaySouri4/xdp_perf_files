@@ -41,7 +41,7 @@ struct bpf_elf_map
 
 struct bpf_elf_map SEC("maps") hs_xdp_payload_map_ring = {
     .type = BPF_MAP_TYPE_RINGBUF,
-    .max_elem = 256 * 1024, // make it large or max
+    .max_elem = 256 * 1024 * 1024, // make it large or max
     .pinning = PIN_GLOBAL_NS,
 };
 
@@ -94,7 +94,13 @@ int hs_xdp_prog(struct xdp_md *ctx)
 
     __u32 pl_size = 20;
 
-    ret = bpf_xdp_load_bytes(ctx, offset, con_map.payload, pl_size);
+    // ret = bpf_xdp_load_bytes(ctx, offset, con_map.payload, pl_size);
+    // if (ret < 0)
+    //     return XDP_PASS;
+
+    payload_size = MAX_PAYLOAD_SIZE;
+
+    ret = bpf_probe_read_kernel(con_map.payload, payload_size, data + offset);
     if (ret < 0)
         return XDP_PASS;
 
@@ -119,7 +125,7 @@ int hs_xdp_prog(struct xdp_md *ctx)
     // return the XDP_RT if the ret value idicates that hs was able to read
     // return XDP_DROP if the ret is neg
 
-    return XDP_PASS;
+    // return XDP_PASS;
 }
 char _license[] SEC("license") = "Dual BSD/GPL"; //"GPL";
 __u32 _version SEC("version") = LINUX_VERSION_CODE;
