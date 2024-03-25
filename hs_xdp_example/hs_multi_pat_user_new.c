@@ -19,6 +19,7 @@
 #include <arpa/inet.h>
 #include <hs/hs.h>
 #include <ctype.h>
+#include <time.h>
 
 #define MAX_PAYLOAD_SIZE 20
 #define MAX_CPUS 128
@@ -34,8 +35,15 @@ hs_database_t *database = NULL;
 hs_scratch_t *scratch = NULL;
 int count = 0;
 
-static int eventHandler(unsigned int id, unsigned long long from,
-                        unsigned long long to, unsigned int flags, void *ctx)
+clock_t start, end;
+double elapsed_times[1000];
+double total_elapsed = 0.0;
+double max_elapsed = 0.0;
+double average;
+
+static int
+eventHandler(unsigned int id, unsigned long long from,
+             unsigned long long to, unsigned int flags, void *ctx)
 {
     fprintf(hs_output, "Match for pattern ID %u at offset %llu\n", id, to);
     return 0; // Continue matching
@@ -167,6 +175,7 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     //     hs_free_database(database);
     // }
 
+    start = clock();
     if (isprint(e->payload[0]))
     {
         if (hs_scan(database, (const char *)e->payload, MAX_PAYLOAD_SIZE, 0, scratch, eventHandler, NULL) != HS_SUCCESS)
@@ -177,13 +186,32 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
         }
     }
 
+    end = clock();
+    double elapsed = (double)(end - start) / CLOCKS_PER_SEC;
+    elapsed_times[count] = elapsed;
+    total_elapsed += elapsed;
+
+    if (elapsed > max_elapsed)
+    {
+        max_elapsed = elapsed;
+    }
+
     count++;
 
-    printf("received %d packets", count);
+    // printf("received %d packets", count);
 
-    if (count % 100 == 0)
+    if (count % 900 == 0)
     {
         printf("received %d packets", count);
+        // average = total_elapsed / count;
+        // printf("Average time per loop: %.6f seconds\n", average);
+        // printf("Maximum time taken in a single loop: %.6f seconds\n", max_elapsed);
+        double average = total_elapsed / 1000;
+        printf("Checked against payload: %s", (const char *)e->payload);
+        printf("Average time per loop: %.6f seconds\n", average);
+        printf("Maximum time taken in a single loop: %.6f seconds\n", max_elapsed);
+        printf("Total time taken in hyperscan: %.6f seconds\n", total_elapsed);
+        // printf("working \n");
     }
 }
 
@@ -231,5 +259,11 @@ int main(int argc, char **argv)
     }
     fclose(fd_output);
     kill(0, SIGINT);
+
+    // double average = total_elapsed / 1000;
+    // printf("Average time per loop: %.6f seconds\n", average);
+    // printf("Maximum time taken in a single loop: %.6f seconds\n", max_elapsed);
+    // printf("Total time taken in hyperscan: %.6f seconds\n", total_elapsed);
+
     return ret;
 }
