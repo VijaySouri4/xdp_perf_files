@@ -1,3 +1,4 @@
+// exec obj file with sudo LD_LIBRARY_PATH=/users/vijay4/libbpf/src:/usr/lib64 ./hs_user
 #include <bpf/libbpf.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,15 +37,15 @@ hs_scratch_t *scratch = NULL;
 int count = 0;
 
 clock_t start, end;
-double elapsed_times[1000];
+double elapsed_times[5000];
 double total_elapsed = 0.0;
 double max_elapsed = 0.0;
 double average;
 double elapsed;
 
 clock_t callback_start, callback_end;
-double callback_elapsed_times[1000];
-double callback_start_times[1000];
+double callback_elapsed_times[5000];
+double callback_start_times[5000];
 double total_callback_elapsed = 0.0;
 double max_callback_elapsed = 0.0;
 double callback_elapsed;
@@ -53,7 +54,7 @@ static int
 eventHandler(unsigned int id, unsigned long long from,
              unsigned long long to, unsigned int flags, void *ctx)
 {
-    fprintf(hs_output, "Match for pattern ID %u at offset %llu\n", id, to);
+    // fprintf(hs_output, "Match for pattern ID %u at offset %llu\n", id, to);
     return 0; // Continue matching
 }
 
@@ -145,29 +146,30 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     struct in_addr dst;
     src.s_addr = e->saddr;
     dst.s_addr = e->daddr;
-    fprintf(fd_output, "%s:%u\t", inet_ntoa(src), ntohs(e->sport));
-    fprintf(fd_output, "%s:%u\n", inet_ntoa(dst), ntohs(e->dport));
-    fprintf(fd_output, "Payload: ");
-    for (int i = 0; i < MAX_PAYLOAD_SIZE; i++)
-    {
-        if (e->payload[i] == '\0')
-            break;
-        if (isprint(e->payload[i]))
-            fprintf(fd_output, "%c", e->payload[i]);
-        else
-            fprintf(fd_output, ".");
-    }
-    fprintf(fd_output, "\n");
-    fflush(fd_output);
+    // fprintf(fd_output, "%s:%u\t", inet_ntoa(src), ntohs(e->sport));
+    // fprintf(fd_output, "%s:%u\n", inet_ntoa(dst), ntohs(e->dport));
+    // fprintf(fd_output, "Payload: ");
+    //  for (int i = 0; i < MAX_PAYLOAD_SIZE; i++)
+    //  {
+    //      if (e->payload[i] == '\0')
+    //          break;
+    //      if (isprint(e->payload[i]))
+    //          fprintf(fd_output, "%c", e->payload[i]);
+    //      else
+    //          fprintf(fd_output, ".");
+    //  }
+    // fprintf(fd_output, "\n");
+    // fflush(fd_output);
 
     start = clock();
     // if (isprint(e->payload[0]))
     // {
+
     if (hs_scan(database, (const char *)e->payload, MAX_PAYLOAD_SIZE, 0, scratch, eventHandler, NULL) != HS_SUCCESS)
     {
         printf("ERROR: Unable to scan input buffer. Exiting.\n");
-        hs_free_scratch(scratch);
-        hs_free_database(database);
+        // hs_free_scratch(scratch);
+        // hs_free_database(database);
     }
     // }
 
@@ -194,8 +196,6 @@ static void print_bpf_output(void *ctx, int cpu, void *data, __u32 size)
     {
         max_callback_elapsed = callback_elapsed;
     }
-
-    printf("%d \t", count);
 
     // if (count % 900 == 0)
     // {
@@ -257,12 +257,10 @@ int main(int argc, char **argv)
     {
         if (ret > 0)
         {
-            // Packet received, update the last packet timestamp
             last_packet_time = time(NULL);
         }
         else
         {
-            // No packet received, check the time elapsed
             time_t current_time = time(NULL);
             if (difftime(current_time, last_packet_time) >= 20)
             {
@@ -270,19 +268,21 @@ int main(int argc, char **argv)
 
                 printf("Hyperscan Stats:\n");
                 printf("Total Packets received: %d \n", count);
-                double average = total_elapsed / 1000;
+                double average = total_elapsed / 5000;
                 // printf("Checked against payload: %s", (const char *)e->payload);
                 printf("Average time per hyperscan loop: %.6f seconds\n", average);
                 printf("Maximum time taken in a single hyperscan loop: %.6f seconds\n", max_elapsed);
                 printf("Total time taken in hyperscan: %.6f seconds\n", total_elapsed);
 
+                printf("Callback function Stats:\n");
                 double callback_average = total_callback_elapsed / 1000;
                 printf("Average time per callback function: %.6f seconds\n", callback_average);
                 printf("Maximum time taken in a single callback function: %.6f seconds\n", max_callback_elapsed);
                 printf("Total time taken in callback function: %.6f seconds\n", total_callback_elapsed);
 
-                double callback_start_random_diff = callback_start_times[32] - callback_start_times[31];
-                printf("The difference between two consequent packet start times: %.6f", callback_start_random_diff);
+                printf("Subsequent packet time difference: \n");
+                double callback_start_random_diff = (callback_start_times[32] - callback_start_times[31]) / CLOCKS_PER_SEC;
+                printf("The difference between two consequent packet start times: %.6f seconds\n", callback_start_random_diff);
 
                 break;
             }

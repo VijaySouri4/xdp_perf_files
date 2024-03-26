@@ -223,6 +223,13 @@ double total_elapsed = 0.0;
 double max_elapsed = 0.0;
 double average;
 
+clock_t callback_start, callback_end;
+double callback_elapsed_times[1000];
+double callback_start_times[1000];
+double total_callback_elapsed = 0.0;
+double max_callback_elapsed = 0.0;
+double callback_elapsed;
+
 static int
 eventHandler(unsigned int id, unsigned long long from,
              unsigned long long to, unsigned int flags, void *ctx)
@@ -304,6 +311,9 @@ int initialize_hyperscan()
 
 static int print_bpf_output(void *ctx, void *data, size_t size)
 {
+    callback_start = clock();
+    callback_start_times[count] = callback_start;
+
     struct connection_info
     {
         __be32 daddr;
@@ -336,14 +346,11 @@ static int print_bpf_output(void *ctx, void *data, size_t size)
     fflush(fd_output);
 
     start = clock();
-    if (isprint(e->payload[0]))
+    if (hs_scan(database, (const char *)e->payload, MAX_PAYLOAD_SIZE, 0, scratch, eventHandler, NULL) != HS_SUCCESS)
     {
-        if (hs_scan(database, (const char *)e->payload, MAX_PAYLOAD_SIZE, 0, scratch, eventHandler, NULL) != HS_SUCCESS)
-        {
-            printf("ERROR: Unable to scan input buffer. Exiting.\n");
-            hs_free_scratch(scratch);
-            hs_free_database(database);
-        }
+        printf("HSERROR: Unable to scan input buffer. Exiting.\n");
+        hs_free_scratch(scratch);
+        hs_free_database(database);
     }
 
     end = clock();
@@ -358,18 +365,28 @@ static int print_bpf_output(void *ctx, void *data, size_t size)
 
     count++;
 
+    callback_end = clock();
+    callback_elapsed = (double)(callback_end - callback_start) / CLOCKS_PER_SEC;
+    callback_elapsed_times[count] = callback_elapsed;
+    total_callback_elapsed += callback_elapsed;
+
+    if (callback_elapsed > max_callback_elapsed)
+    {
+        max_callback_elapsed = callback_elapsed;
+    }
+
     // printf("received %d packets", count);
 
-    if (count % 900 == 0)
-    {
-        printf("received %d packets", count);
-        double average = total_elapsed / 1000;
-        printf("Checked against payload: %s", (const char *)e->payload);
-        printf("Average time per loop: %.6f seconds\n", average);
-        printf("Maximum time taken in a single loop: %.6f seconds\n", max_elapsed);
-        printf("Total time taken in hyperscan: %.6f seconds\n", total_elapsed);
-        // printf("working \n");
-    }
+    // if (count % 900 == 0)
+    // {
+    //     printf("received %d packets", count);
+    //     double average = total_elapsed / 1000;
+    //     printf("Checked against payload: %s", (const char *)e->payload);
+    //     printf("Average time per loop: %.6f seconds\n", average);
+    //     printf("Maximum time taken in a single loop: %.6f seconds\n", max_elapsed);
+    //     printf("Total time taken in hyperscan: %.6f seconds\n", total_elapsed);
+    //     // printf("working \n");
+    // }
 }
 
 int main(int argc, char **argv)
@@ -412,19 +429,40 @@ int main(int argc, char **argv)
         perror("ring_buffer setup failed");
         return 1;
     }
-    while (1) // ring_buffer__poll(pb, 1000)
+
+    time_t last_packet_time = time(NULL);
+
+    while (ring_buffer__poll(pb, 1000)) // ring_buffer__poll(pb, 1000)
     {
-        ring_buffer__consume(pb);
-        // printf("1111");
+        // ring_buffer__poll(pb, 1000);
+
+        if (count % 1000 == 0)
+        {
+            printf("Processed %d packets\n", count);
+        }
     }
     fclose(fd_output);
     // kill(0, SIGINT);
     printf("Outside");
 
-    // double average = total_elapsed / 1000;
-    // printf("Average time per loop: %.6f seconds\n", average);
-    // printf("Maximum time taken in a single loop: %.6f seconds\n", max_elapsed);
-    // printf("Total time taken in hyperscan: %.6f seconds\n", total_elapsed);
+    printf("Hyperscan Stats:\n");
+    printf("Total Packets received: %d \n", count);
+    double average = total_elapsed / count;
+    printf("Average time per hyperscan loop: %.6f seconds\n", average);
+    printf("Maximum time taken in a single hyperscan loop: %.6f seconds\n", max_elapsed);
+    printf("Total time taken in hyperscan: %.6f seconds\n", total_elapsed);
 
+    printf("Callback function Stats:\n");
+    double callback_average = total_callback_elapsed / count;
+    printf("Average time per callback function: %.6f seconds\n", callback_average);
+    printf("Maximum time taken in a single callback function: %.6f seconds\n", max_callback_elapsed);
+    printf("Total time taken in callback function: %.6f seconds\n", total_callback_elapsed);
+
+    // Calculate and display the time difference between subsequent packets
+    if (count > 1)
+    {
+        double callback_start_diff = (double)(callback_start_times[count - 1] - callback_start_times[count - 2]) / CLOCKS_PER_SEC;
+        printf("Time difference between the last two packets: %.6f seconds\n", callback_start_diff);
+    }
     return ret;
 }

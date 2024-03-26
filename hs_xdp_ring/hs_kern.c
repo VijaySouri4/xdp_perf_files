@@ -41,7 +41,7 @@ struct bpf_elf_map
 
 struct bpf_elf_map SEC("maps") hs_xdp_payload_map_ring = {
     .type = BPF_MAP_TYPE_RINGBUF,
-    .max_elem = 256 * 1024 * 1024, // make it large or max
+    .max_elem = 256 * 1024, // make it large or max
     .pinning = PIN_GLOBAL_NS,
 };
 

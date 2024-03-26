@@ -1,3 +1,7 @@
+/* Compile program with:
+gcc -I/usr/local/include/hs hs_test_1000.c /usr/local/lib/libhs.a -lstdc++
+ -lm*/
+
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -8,6 +12,9 @@
 #include <time.h>
 
 #include <hs/hs.h>
+
+#define NUM_BUFFERS 1000
+#define BUFFER_SIZE 7
 
 #define MAX_PAYLOAD_SIZE 20
 #define MAX_CPUS 128
@@ -20,10 +27,21 @@ int count = 0;
 
 FILE *hs_output;
 
+char buffers[NUM_BUFFERS][BUFFER_SIZE];
+
+void initializeBuffers()
+{
+    const char *str = "hello!";
+    for (int i = 0; i < NUM_BUFFERS; i++)
+    {
+        strncpy(buffers[i], str, BUFFER_SIZE);
+    }
+}
+
 static int eventHandler(unsigned int id, unsigned long long from,
                         unsigned long long to, unsigned int flags, void *ctx)
 {
-    fprintf(hs_output, "Match for pattern ID %u at offset %llu\n", id, to);
+    // fprintf(hs_output, "Match for pattern ID %u at offset %llu\n", id, to);
     return 0; // Continue matching
 }
 
@@ -101,84 +119,49 @@ int initialize_hyperscan()
 int main(int argc, char *argv[])
 {
     if (initialize_hyperscan() != 0)
-        printf("Faileed to init hyperscan");
-
-    // if (argc != 2)
-    // {
-    //     fprintf(stderr, "Usage: %s <input file>\n", argv[0]);
-    //     return -1;
-    // }
-
-    // char *inputFN = argv[1];
-
-    // if (access(inputFN, F_OK) != 0)
-    // {
-    //     fprintf(stderr, "ERROR: file doesn't exist.\n");
-    //     return -1;
-    // }
-    // if (access(inputFN, R_OK) != 0)
-    // {
-    //     fprintf(stderr, "ERROR: can't be read.\n");
-    //     return -1;
-    // }
-
-    // unsigned int length;
-    // char *inputData = readInputData(inputFN, &length);
-    // if (!inputData)
-    // {
-    //     hs_free_database(database);
-    //     return -1;
-    // }
+        printf("Failed to init hyperscan");
 
     if ((hs_output = fopen("/users/vijay4/perf/xdp_perf_files/hs_test_1000_outFile", "w")) == NULL)
         return 1;
 
-    // printf("Scanning %u bytes with Hyperscan\n", length);
+    initializeBuffers();
 
-    int counter = 0;
-    char str[] = "hello!";
-
-    printf("Starting scan for %s:", str);
+    printf("Starting scan for buffers containing 'hello!':\n");
 
     clock_t start, end;
-    double elapsed_times[1000];
+    double elapsed_times[NUM_BUFFERS];
     double total_elapsed = 0.0;
     double max_elapsed = 0.0;
 
-    while (counter < 1000)
+    for (int i = 0; i < NUM_BUFFERS; i++)
     {
         start = clock();
 
-        if (hs_scan(database, str, 7, 0, scratch, eventHandler,
-                    NULL) != HS_SUCCESS)
+        if (hs_scan(database, buffers[i], BUFFER_SIZE, 0, scratch, eventHandler, NULL) != HS_SUCCESS)
         {
             fprintf(stderr, "ERROR: Unable to scan input buffer. Exiting.\n");
             hs_free_scratch(scratch);
-            // free(inputData);
             hs_free_database(database);
             return -1;
         }
 
         end = clock();
         double elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-        elapsed_times[counter] = elapsed;
+        elapsed_times[i] = elapsed;
         total_elapsed += elapsed;
 
         if (elapsed > max_elapsed)
         {
             max_elapsed = elapsed;
         }
-
-        counter++;
     }
 
-    double average = total_elapsed / 1000;
-    printf("Average time per loop: %.6f seconds\n", average);
-    printf("Maximum time taken in a single loop: %.6f seconds\n", max_elapsed);
-    printf("Total time taken in the loop: %.6f seconds\n", total_elapsed);
+    double average = total_elapsed / NUM_BUFFERS;
+    printf("Average time per buffer scan: %.6f seconds\n", average);
+    printf("Maximum time taken in a single buffer scan: %.6f seconds\n", max_elapsed);
+    printf("Total time taken to scan all buffers: %.6f seconds\n", total_elapsed);
 
     hs_free_scratch(scratch);
-    // free(inputData);
     hs_free_database(database);
     return 0;
 }
