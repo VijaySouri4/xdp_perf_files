@@ -218,14 +218,14 @@ hs_scratch_t *scratch = NULL;
 int count = 0;
 
 clock_t start, end;
-double elapsed_times[1000];
+double elapsed_times[50000];
 double total_elapsed = 0.0;
 double max_elapsed = 0.0;
 double average;
 
 clock_t callback_start, callback_end;
-double callback_elapsed_times[1000];
-double callback_start_times[1000];
+double callback_elapsed_times[50000];
+double callback_start_times[50000];
 double total_callback_elapsed = 0.0;
 double max_callback_elapsed = 0.0;
 double callback_elapsed;
@@ -345,6 +345,8 @@ static int print_bpf_output(void *ctx, void *data, size_t size)
     fprintf(fd_output, "\n");
     fflush(fd_output);
 
+    const char *payload = (const char *)e->payload;
+
     start = clock();
     if (hs_scan(database, (const char *)e->payload, MAX_PAYLOAD_SIZE, 0, scratch, eventHandler, NULL) != HS_SUCCESS)
     {
@@ -375,7 +377,11 @@ static int print_bpf_output(void *ctx, void *data, size_t size)
         max_callback_elapsed = callback_elapsed;
     }
 
-    // printf("received %d packets", count);
+    if (count % 500 == 0)
+    {
+        printf("Packet: %d\t", count);
+        fflush(stdout);
+    }
 
     // if (count % 900 == 0)
     // {
@@ -432,13 +438,20 @@ int main(int argc, char **argv)
 
     time_t last_packet_time = time(NULL);
 
-    while (ring_buffer__poll(pb, 1000)) // ring_buffer__poll(pb, 1000)
+    while (1) // ring_buffer__poll(pb, 1000)
     {
-        // ring_buffer__poll(pb, 1000);
+        ring_buffer__poll(pb, 1000);
 
-        if (count % 1000 == 0)
+        if (count % 2000 == 0 && count != 0)
         {
             printf("Processed %d packets\n", count);
+            printf("Hyperscan Stats:\n");
+            printf("Total Packets received: %d \n", count);
+            double average = total_elapsed / count;
+            printf("Average time per hyperscan loop: %.6f seconds\n", average);
+            printf("Maximum time taken in a single hyperscan loop: %.6f seconds\n", max_elapsed);
+            printf("Total time taken in hyperscan: %.6f seconds\n", total_elapsed);
+            break;
         }
     }
     fclose(fd_output);

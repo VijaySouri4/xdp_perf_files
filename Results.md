@@ -67,7 +67,7 @@ Total time taken in callback function: 0.335024 seconds
 Subsequent packet time difference: 
 The difference between two consequent packet start times: 0.000401 seconds
 
-## Ring Buffer
+## Ring Buffer with file writes
 
 No packets received for 20 seconds. Exiting.
 Hyperscan Stats:
@@ -81,3 +81,20 @@ Maximum time taken in a single callback function: 0.005868 seconds
 Total time taken in callback function: 2.033493 seconds
 Subsequent packet time difference: 
 The difference between two consequent packet start times: 0.005597 seconds
+
+Processed 1000 packets
+Hyperscan Stats:
+Total Packets received: 1000 
+Average time per hyperscan loop: 0.005745 seconds
+Maximum time taken in a single hyperscan loop: 0.007922 seconds
+Total time taken in hyperscan: 5.745267 seconds
+OutsideHyperscan Stats:
+Total Packets received: 1000 
+Average time per hyperscan loop: 0.005745 seconds
+Maximum time taken in a single hyperscan loop: 0.007922 seconds
+Total time taken in hyperscan: 5.745267 seconds
+Callback function Stats:
+Average time per callback function: 0.005753 seconds
+Maximum time taken in a single callback function: 0.007930 seconds
+Total time taken in callback function: 5.753483 seconds
+Time difference between the last two packets: 0.005921 seconds
