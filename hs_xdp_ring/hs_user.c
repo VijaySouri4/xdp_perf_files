@@ -234,7 +234,7 @@ static int
 eventHandler(unsigned int id, unsigned long long from,
              unsigned long long to, unsigned int flags, void *ctx)
 {
-    fprintf(hs_output, "Match for pattern ID %u at offset %llu\n", id, to);
+    // fprintf(hs_output, "Match for pattern ID %u at offset %llu\n", id, to);
     return 0; // Continue matching
 }
 
@@ -326,29 +326,29 @@ static int print_bpf_output(void *ctx, void *data, size_t size)
     struct in_addr dst;
     src.s_addr = e->saddr;
     dst.s_addr = e->daddr;
-    fprintf(fd_output, "%s:%u\t", inet_ntoa(src), ntohs(e->sport));
-    fprintf(fd_output, "%s:%u\n", inet_ntoa(dst), ntohs(e->dport));
-    fprintf(fd_output, "Payload: ");
-    for (int i = 0; i < MAX_PAYLOAD_SIZE; i++)
-    {
-        // printf("before break \n");
-        //  Check for the end of the payload
-        if (e->payload[i] == '\0')
-            break;
-        // printf("after break \n");
-        //  Print payload characters if printable, otherwise print a dot
-        if (isprint(e->payload[i]))
-            fprintf(fd_output, "%c", e->payload[i]);
-        else
-            fprintf(fd_output, ".");
-    }
-    fprintf(fd_output, "\n");
-    fflush(fd_output);
+    // fprintf(fd_output, "%s:%u\t", inet_ntoa(src), ntohs(e->sport));
+    // fprintf(fd_output, "%s:%u\n", inet_ntoa(dst), ntohs(e->dport));
+    // fprintf(fd_output, "Payload: ");
+    // for (int i = 0; i < MAX_PAYLOAD_SIZE; i++)
+    // {
+    //     // printf("before break \n");
+    //     //  Check for the end of the payload
+    //     if (e->payload[i] == '\0')
+    //         break;
+    //     // printf("after break \n");
+    //     //  Print payload characters if printable, otherwise print a dot
+    //     if (isprint(e->payload[i]))
+    //         fprintf(fd_output, "%c", e->payload[i]);
+    //     else
+    //         fprintf(fd_output, ".");
+    // }
+    // fprintf(fd_output, "\n");
+    // fflush(fd_output);
 
     const char *payload = (const char *)e->payload;
 
     start = clock();
-    if (hs_scan(database, (const char *)e->payload, MAX_PAYLOAD_SIZE, 0, scratch, eventHandler, NULL) != HS_SUCCESS)
+    if (hs_scan(database, payload, MAX_PAYLOAD_SIZE, 0, scratch, eventHandler, NULL) != HS_SUCCESS)
     {
         printf("HSERROR: Unable to scan input buffer. Exiting.\n");
         hs_free_scratch(scratch);

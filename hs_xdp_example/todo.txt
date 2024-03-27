@@ -19,3 +19,14 @@ Use DPDK
 3. scapy traffic generator
 
 remove + + from the regex list 
+
+
+1. measure variance
+2. fix the CPU clock frequencies[https://github.com/smartnic/bpf-profile/blob/main/setup/set_cpu_freq.sh]
+[https://github.com/smartnic/bpf-profile/blob/main/setup/constant_freq.sh]
+3. Use data trace: https://pages.cs.wisc.edu/~tbenson/IMC10_Data.html — use data center traces with tcpreplay
+https://7h3ram.github.io/posts/20141115_pcapedit.html
+4. measuring with different ruleset sizes
+5. relate throughput  to the difference in times between two packets: tcpdump
+
+6. understand 2x increase in processing time for hs_scan from pure userspace buffer to userspace + perf buffers from bpf
