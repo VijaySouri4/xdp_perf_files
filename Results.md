@@ -38,6 +38,12 @@ Average time per buffer scan: 0.000144 seconds
 Maximum time taken in a single buffer scan: 0.000208 seconds
 Total time taken to scan all buffers: 0.144312 seconds
 
+## HS with 2d array of size 20 without file writes
+Starting scan for buffers containing 'hello!':
+Average time per buffer scan: 0.000597 seconds
+Maximum time taken in a single buffer scan: 0.000897 seconds
+Total time taken to scan all buffers: 0.597097 seconds
+
 ## Perf Buffer 
 
 #### Hyperscan Stats:
@@ -98,3 +104,17 @@ Average time per callback function: 0.005753 seconds
 Maximum time taken in a single callback function: 0.007930 seconds
 Total time taken in callback function: 5.753483 seconds
 Time difference between the last two packets: 0.005921 seconds
+
+
+### Stabilized cpu clock and variance
+OutsideHyperscan Stats:
+Total Packets received: 2001 
+Average time per hyperscan loop: 0.000557 seconds
+Maximum time taken in a single hyperscan loop: 0.000925 seconds
+Total time taken in hyperscan: 1.115264 seconds
+Callback function Stats:
+Average time per callback function: 0.000559 seconds
+Maximum time taken in a single callback function: 0.000928 seconds
+Total time taken in callback function: 1.119455 seconds
+Average time difference between subsequent packets: 0.000566 seconds
+Variance of time differences: 0.000000000084655

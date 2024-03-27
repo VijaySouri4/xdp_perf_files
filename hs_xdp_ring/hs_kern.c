@@ -19,6 +19,13 @@
 #define PIN_GLOBAL_NS 2
 #define MAX_PAYLOAD_SIZE 50
 
+__u64 eth_pass_count = 0;
+__u64 ip_pass_count = 0;
+__u64 tcp_pass_count = 0;
+__u64 payload_pass_count = 0;
+__u64 hs_final_count = 0;
+__u64 ring_write_fail_count = 0;
+
 struct connection_map
 {
     __be32 saddr;
@@ -45,6 +52,14 @@ struct bpf_elf_map SEC("maps") hs_xdp_payload_map_ring = {
     .pinning = PIN_GLOBAL_NS,
 };
 
+struct bpf_elf_map SEC("maps") packet_count_map = {
+    .type = BPF_MAP_TYPE_ARRAY,
+    .size_key = sizeof(__u32),
+    .size_value = sizeof(__u64),
+    .max_elem = 6,
+    .pinning = PIN_GLOBAL_NS,
+};
+
 /*
  * struct {
     __uint(type, BPF_MAP_TYPE_ARRAY);
@@ -68,21 +83,52 @@ int hs_xdp_prog(struct xdp_md *ctx)
     __u64 ktime;
     __u64 flags = BPF_F_CURRENT_CPU;
 
+    // packet_count++;
+
+    // __u32 key = 0;
+    // bpf_map_update_elem(&packet_count_map, &key, &packet_count, BPF_ANY);
+
+    __u32 key = 0;
+    bpf_map_update_elem(&packet_count_map, &key, &eth_pass_count, BPF_ANY);
+    key++;
+    bpf_map_update_elem(&packet_count_map, &key, &ip_pass_count, BPF_ANY);
+    key++;
+    bpf_map_update_elem(&packet_count_map, &key, &tcp_pass_count, BPF_ANY);
+    key++;
+    bpf_map_update_elem(&packet_count_map, &key, &payload_pass_count, BPF_ANY);
+    key++;
+    bpf_map_update_elem(&packet_count_map, &key, &ring_write_fail_count, BPF_ANY);
+    key++;
+    bpf_map_update_elem(&packet_count_map, &key, &hs_final_count, BPF_ANY);
+
     int ret;
     struct connection_map con_map;
 
     if (!eth || (void *)eth + ETH_HLEN > data_end)
+    {
+        eth_pass_count++;
         return XDP_PASS;
+    }
 
     iph = data + sizeof(*eth);
     if (!iph || (void *)iph + sizeof(*iph) > data_end)
+    {
+        ip_pass_count++;
         return XDP_PASS;
+    }
+
     if (iph->protocol != IPPROTO_TCP)
+    {
+        tcp_pass_count++;
         return XDP_PASS;
+    }
 
     tcph = (void *)iph + sizeof(*iph);
     if (!tcph || (void *)tcph + sizeof(*tcph) > data_end)
+    {
+        tcp_pass_count++;
         return XDP_PASS;
+    }
 
     __u32 payload_size = data_end - (void *)tcph - sizeof(*tcph);
     if (payload_size > MAX_PAYLOAD_SIZE)
@@ -102,7 +148,10 @@ int hs_xdp_prog(struct xdp_md *ctx)
 
     ret = bpf_probe_read_kernel(con_map.payload, payload_size, data + offset);
     if (ret < 0)
+    {
+        payload_pass_count++;
         return XDP_PASS;
+    }
 
     con_map.saddr = iph->daddr;
     con_map.daddr = iph->saddr;
@@ -117,9 +166,16 @@ int hs_xdp_prog(struct xdp_md *ctx)
 
     ret = bpf_ringbuf_output(&hs_xdp_payload_map_ring, &con_map, sizeof(con_map), 0);
     if (ret < 0)
+    {
+        ring_write_fail_count++;
         return XDP_DROP;
+    }
     else
+    {
+        hs_final_count++;
         return XDP_TX;
+    }
+
     // check ret values
     // ideally if the perf output was not read
     // return the XDP_RT if the ret value idicates that hs was able to read

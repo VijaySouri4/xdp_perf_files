@@ -14,9 +14,9 @@ gcc -I/usr/local/include/hs hs_test_1000.c /usr/local/lib/libhs.a -lstdc++
 #include <hs/hs.h>
 
 #define NUM_BUFFERS 1000
-#define BUFFER_SIZE 7
+#define BUFFER_SIZE 20
 
-#define MAX_PAYLOAD_SIZE 20
+#define MAX_PAYLOAD_SIZE 50
 #define MAX_CPUS 128
 #define MAX_PATTERNS 10000          // Adjust based on the expected number of patterns
 #define PATTERN_FLAG HS_FLAG_DOTALL // Modify as needed
@@ -34,7 +34,7 @@ void initializeBuffers()
     const char *str = "hello!";
     for (int i = 0; i < NUM_BUFFERS; i++)
     {
-        strncpy(buffers[i], str, BUFFER_SIZE);
+        strncpy(buffers[i], str, 7);
     }
 }
 
