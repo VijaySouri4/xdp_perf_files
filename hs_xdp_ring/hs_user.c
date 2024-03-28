@@ -56,6 +56,7 @@ eventHandler(unsigned int id, unsigned long long from,
              unsigned long long to, unsigned int flags, void *ctx)
 {
     // fprintf(hs_output, "Match for pattern ID %u at offset %llu\n", id, to);
+    // printf("Match for patter id: %u", id);
     return 0; // Continue matching
 }
 
@@ -202,6 +203,7 @@ static int print_bpf_output(void *ctx, void *data, size_t size)
     {
         printf("Packet: %d\t", count);
         fflush(stdout);
+        // printf("Packet payload is: %s", payload);
     }
 
     // if (count % 900 == 0)
@@ -264,7 +266,7 @@ int main(int argc, char **argv)
         ring_buffer__poll(pb, 1000);
 
         // if (count % 2000 == 0 && count != 0)
-        if (count > 2000)
+        if (count > 8690)
         {
             printf("Processed %d packets\n", count);
             printf("Hyperscan Stats:\n");

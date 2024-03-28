@@ -5,6 +5,7 @@
 #include "linux/if_ether.h"
 #include "linux/ip.h"
 #include "linux/tcp.h"
+#include "linux/udp.h"
 #include "linux/bpf.h"
 #include "bpf/bpf_helpers.h"
 #include "bpf/bpf_endian.h"
@@ -80,6 +81,7 @@ int hs_xdp_prog(struct xdp_md *ctx)
     struct ethhdr *eth = data;
     struct iphdr *iph;
     struct tcphdr *tcph;
+    struct udphdr *udph;
 
     __u64 ktime;
     __u64 flags = BPF_F_CURRENT_CPU;
@@ -120,26 +122,51 @@ int hs_xdp_prog(struct xdp_md *ctx)
         return XDP_PASS;
     }
 
-    if (iph->protocol != IPPROTO_TCP)
+    // if (iph->protocol != IPPROTO_TCP)
+    // {
+    //     tcp_pass_count++;
+    //     return XDP_PASS;
+    // }
+
+    __u32 offset;
+
+    if (iph->protocol == IPPROTO_TCP)
     {
-        tcp_pass_count++;
-        return XDP_PASS;
+        tcph = (void *)iph + sizeof(*iph);
+        if (!tcph || (void *)tcph + sizeof(*tcph) > data_end)
+        {
+            tcp_pass_count++;
+            return XDP_PASS;
+        }
+        __u32 offset = sizeof(*eth) + sizeof(*iph) + sizeof(*tcph);
+    }
+    else if (iph->protocol == IPPROTO_UDP)
+    {
+        udph = (void *)iph + sizeof(*iph);
+        if (!udph || (void *)udph + sizeof(*udph) > data_end)
+        {
+            tcp_pass_count++;
+            return XDP_PASS;
+        }
+        __u32 offset = sizeof(*eth) + sizeof(*iph) + sizeof(*udph);
+    }
+    else
+    {
+        return XDP_PASS; // Non-TCP/UDP packet, pass along
     }
 
-    tcph = (void *)iph + sizeof(*iph);
-    if (!tcph || (void *)tcph + sizeof(*tcph) > data_end)
-    {
-        tcp_pass_count++;
-        return XDP_PASS;
-    }
+    // tcph = (void *)iph + sizeof(*iph);
+    // if (!tcph || (void *)tcph + sizeof(*tcph) > data_end)
+    // {
+    //     tcp_pass_count++;
+    //     return XDP_PASS;
+    // }
 
-    __u32 payload_size = data_end - (void *)tcph - sizeof(*tcph);
-    if (payload_size > MAX_PAYLOAD_SIZE)
-    {
-        payload_size = MAX_PAYLOAD_SIZE;
-    }
-
-    __u32 offset = sizeof(*eth) + sizeof(*iph) + sizeof(*tcph);
+    // __u32 payload_size = data_end - (void *)tcph - sizeof(*tcph);
+    // if (payload_size > MAX_PAYLOAD_SIZE)
+    // {
+    //     payload_size = MAX_PAYLOAD_SIZE;
+    // }
 
     __u32 pl_size = 20;
 
@@ -147,7 +174,7 @@ int hs_xdp_prog(struct xdp_md *ctx)
     // if (ret < 0)
     //     return XDP_PASS;
 
-    payload_size = MAX_PAYLOAD_SIZE;
+    __u32 payload_size = MAX_PAYLOAD_SIZE;
 
     ret = bpf_probe_read_kernel(con_map.payload, payload_size, data + offset);
     if (ret < 0)

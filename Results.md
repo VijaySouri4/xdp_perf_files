@@ -38,7 +38,7 @@ Average time per buffer scan: 0.000144 seconds
 Maximum time taken in a single buffer scan: 0.000208 seconds
 Total time taken to scan all buffers: 0.144312 seconds
 
-## HS with 2d array of size 20 without file writes
+## HS with 2d array of size 20 without file writes and stabilized clock
 Starting scan for buffers containing 'hello!':
 Average time per buffer scan: 0.000597 seconds
 Maximum time taken in a single buffer scan: 0.000897 seconds
